@@ -41,6 +41,7 @@ export default defineAction({
       ),
   }),
   http: { method: "POST" },
+  needsApproval: true,
   run: async (input, ctx) => {
     const response = await callBackend<Record<string, unknown>>({
       method: "POST",

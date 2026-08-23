@@ -17,6 +17,7 @@ export default defineAction({
     id: z.number().int().positive().describe("The id of the task to delete"),
   }),
   http: { method: "DELETE" },
+  needsApproval: true,
   run: async ({ id }, ctx) => {
     const input = { id };
     const response = await callBackend<unknown>({

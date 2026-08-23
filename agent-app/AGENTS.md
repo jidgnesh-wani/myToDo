@@ -59,10 +59,12 @@ workflow needs durable UI around the conversation.
   iframe), and delete or hide actions the UI no longer uses. See the `actions`
   skill.
 - Keep database code provider-agnostic and additive.
-- Use `view-screen` or application state when the active page/selection is
-  unclear.
-- For new features, update UI, actions, skills/instructions, and application
-  state when applicable.
+## Agent Workflows
+- The agent now supports: "Organize my tasks for today", "Summarize overdue tasks", and "Weekly Planner".
+- Use `save-memory` to record user preferences.
+
+## Confirmation Rules
+- Mutating actions (`deleteTask`, `updateTask`, `saveScratchpad`) require human approval before execution. This is enforced via `needsApproval: true`.
 
 ## Application State
 

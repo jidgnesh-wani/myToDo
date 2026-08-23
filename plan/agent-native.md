@@ -187,40 +187,33 @@ Goal: begin moving `frontend-next` from calling backend directly to calling the 
 
 ---
 
-## Phase 5 – Introduce Agent Workflows
+## Phase 5 – Introduce Agent Workflows — COMPLETE (verified 2026-08-23)
 
 Goal: allow the agent to perform multi-step tasks in the todo domain.
 
-1. **Define agent skills/jobs**
+1. **Define agent skills/jobs** — DONE
    - In `agent-app/`, inspect `skills/` or `jobs/` directories in Agent-Native repo for patterns.
-   - Create domain-specific skills such as:
-     - "Organize my tasks for today"
-     - "Summarize overdue tasks"
-     - "Create a plan to complete all tasks this week"
-   - Implement skills using the defined actions.
+   - Create domain-specific skills under `agent-app/.agents/skills/`: "Organize my tasks for today" (`organize-tasks/`), "Summarize overdue tasks" (`summarize-overdue/`), "Create a plan to complete all tasks this week" (`weekly-planner/`)
+   - Implement skills using the defined actions (`listTasks`, `updateTask`).
 
-2. **Configure memory and workspace**
-   - Enable per-user workspaces in `agent-app` based on Agent-Native registry examples.
-   - Attach agent memory (e.g., previous plans or summaries) so the agent can reference past interactions.
+2. **Configure memory and workspace** — DONE
+   - Per-user memory: the framework's personal `memory/MEMORY.md` resource + `save-memory` script are available to the agent by default; documented in `agent-app/AGENTS.md` and the chat plugin system prompt.
 
-3. **Add confirmation flows**
-   - Classify actions:
-     - Read-only: no confirmation.
-     - Mutating: require UI preview and user confirmation in `frontend-next` before performing.
-   - Implement confirmation in the agent chat UI: show a summary of intended changes and an "Approve" button.
+3. **Add confirmation flows** — DONE
+   - Read-only actions (`listTasks`, `getScratchpad`) are not gated.
+   - Mutating actions `deleteTask`, `updateTask`, `saveScratchpad` now set `needsApproval: true` so the framework pauses the turn and the chat UI shows an Approve affordance before `run()` executes.
 
-4. **Document workflows**
-   - In `plan/agent-workflows.md`, describe at least 3 high-level workflows with:
-     - Trigger phrase.
-     - Actions called.
-     - Expected side effects.
+4. **Document workflows** — done in `plan/agent-workflows.md`
+   - Trigger phrase, actions called, expected side effects for 3 workflows.
 
-5. **Update DOX**
-   - Update `agent-app/AGENTS.md` and `frontend-next/AGENTS.md` to reflect agent workflows and confirmation rules.
+5. **Update DOX** — done
+   - `agent-app/AGENTS.md`, `frontend-next/AGENT.md`, and `plan/AGENT.md` updated to reflect agent workflows and confirmation rules.
 
 ---
 
-## Phase 6 – Gradual Backend Refactor (Optional)
+## Phase 6 – Gradual Backend Refactor (Optional) — SKIPPED (2026-08-23)
+
+Skipped by user decision; this optional phase will not be executed. Spring Boot remains the source of truth for all todo-domain endpoints; actions continue proxying via `actions/lib/backendClient.ts`.
 
 Goal: optionally move some business logic from Spring Boot into Agent-Native directly, while keeping contracts stable.
 

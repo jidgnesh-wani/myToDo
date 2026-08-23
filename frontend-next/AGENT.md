@@ -26,6 +26,7 @@ All files under `frontend-next/`.
 - Cross-day drag-and-drop and same-day reorder logic live in component + `lib/dateHelpers.js`
 - Agent chat panel: `MainView.js` renders an iframe (`src` = `NEXT_PUBLIC_AGENT_URL`) in an `agent-sidebar` aside, toggled by the floating "Ask AI" FAB (`#agent-fab`); both are only rendered when `NEXT_PUBLIC_AGENT_URL` is set
 - Page context contract: `MainView.js` sends `{ view, selectedTaskId, selectedDate, filters }` whenever route/popup changes — via `setPageContext()` in `lib/agentClient.ts` (PUT to agent-app `/_agent-native/application-state/page-context`) and a `agentNative.setChatContext` postMessage that pre-fills the iframe composer; the agent reads it back with the `view-screen` action in `agent-app/`
+- Agent confirmation flows: mutating agent actions (`deleteTask`, `updateTask`, `saveScratchpad`) now require human approval inside the agent chat panel (framework `needsApproval`); the embeddable chat UI renders an Approve affordance for these calls
 
 ## Ports
 
