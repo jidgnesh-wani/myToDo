@@ -15,7 +15,7 @@ The agent must update AGENTS.md files as contracts per DOX rules when scopes, wo
 
 ---
 
-## Phase 0 – Read DOX and Establish Context
+## Phase 0 – Read DOX and Establish Context — COMPLETE (verified 2026-08-23)
 
 1. **Read DOX chain**
    - Open `AGENTS.md` at repo root and read it fully.
@@ -34,7 +34,7 @@ The agent must update AGENTS.md files as contracts per DOX rules when scopes, wo
 
 ---
 
-## Phase 1 – Inventory Existing Domain Operations
+## Phase 1 – Inventory Existing Domain Operations — COMPLETE (verified 2026-08-23)
 
 Goal: identify the main user-facing capabilities that will become Agent-Native Actions.
 
@@ -70,7 +70,7 @@ Goal: identify the main user-facing capabilities that will become Agent-Native A
 
 ---
 
-## Phase 2 – Set Up Agent-Native App Skeleton
+## Phase 2 – Set Up Agent-Native App Skeleton — COMPLETE (verified 2026-08-23)
 
 Goal: create an initial Agent-Native app that can run alongside the existing frontend and backend.
 
@@ -102,7 +102,7 @@ Goal: create an initial Agent-Native app that can run alongside the existing fro
 
 ---
 
-## Phase 3 – Define Shared Actions Layer
+## Phase 3 – Define Shared Actions Layer — COMPLETE (verified 2026-08-23)
 
 Goal: introduce a shared action layer in `agent-app/` that reflects existing backend operations.
 
@@ -155,7 +155,7 @@ Goal: introduce a shared action layer in `agent-app/` that reflects existing bac
 
 ---
 
-## Phase 4 – Connect Existing Frontend to Actions
+## Phase 4 – Connect Existing Frontend to Actions — COMPLETE (verified 2026-08-23)
 
 Goal: begin moving `frontend-next` from calling backend directly to calling the shared actions, where appropriate.
 
