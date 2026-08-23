@@ -1,7 +1,8 @@
 {
   "extends": "@agent-native/core/tsconfig.base.json",
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
+    // Keep at "5.0": the editor LSP (bundled TS 5.9) rejects "6.0", and the project's TS 7 accepts both.
+    "ignoreDeprecations": "5.0",
     "rootDirs": [".", "./.react-router/types"],
     "paths": {
       "*": ["./*"],

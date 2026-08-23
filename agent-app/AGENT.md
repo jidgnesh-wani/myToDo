@@ -15,6 +15,7 @@ All files under `agent-app/`.
 - **Authorization**: The Spring Boot backend has no user/permission model, so there are no domain permission checks to enforce. Action routes rely on the framework's authenticated-owner default (`requiresAuth`) and the audit log records the acting session email when one exists.
 - **Access control**: Follow user-tenant boundary rules for actions.
 - **Port Mapping**: Dev server on `http://localhost:8080` (Agent-Native default). Spring Boot backend on `http://localhost:8000` (dev) / `5555` (prod); override with `BACKEND_URL` in `.env`.
+- **TypeScript toolchain**: `tsconfig.json` extends `@agent-native/core/tsconfig.base.json` but overrides `ignoreDeprecations` to `"5.0"`. The framework base uses `"6.0"`, which the editor LSP (bundled TS 5.9.x) rejects; the project's TS 7.0.2 accepts both. Keep `"5.0"` until the LSP bundles a TS that accepts `"6.0"`.
 
 ## Work Guidance
 
