@@ -29,7 +29,17 @@ Document high-level agent workflows for the todo application to guide agent-nati
 ## Confirmation Rules
 
 - **Read-only**: No confirmation required (`listTasks`, `getScratchpad`).
-- **Mutating**: 
+- **Mutating**:
   - `deleteTask`: Always requires confirmation (`needsApproval: true`).
-  - `updateTask` (bulk): Requires confirmation if it changes more than 3 tasks.
+  - `updateTask` (bulk): Requires confirmation (`needsApproval: true`).
+  - `saveScratchpad`: Requires confirmation (`needsApproval: true`).
   - `createTask`: No confirmation required.
+
+## External-Agent (MCP) Surface
+
+External agents reach the app through the MCP server at `/mcp`. The curated
+surface is read-only — `listTasks` and `getScratchpad` only, authenticated;
+mutations are never advertised as direct tools. Writes requested by an external
+agent go through `ask_app`, which runs this app's agent loop and therefore
+applies the confirmation rules above (see root `AGENT.md` → External-Agent
+(MCP) Surface).

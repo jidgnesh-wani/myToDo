@@ -37,6 +37,12 @@ export default defineAction({
   }),
   http: { method: "GET" },
   readOnly: true,
+  /**
+   * External-agent ingest opt-in (Phase 7): authenticated MCP/A2A callers may
+   * list tasks directly. `requiresAuth: true` keeps it off the anonymous
+   * local-dev probe surface.
+   */
+  publicAgent: { expose: true, readOnly: true, requiresAuth: true },
   run: async ({ groupByDate, category, complete, priority }) => {
     const path = groupByDate ? "/todo/allbydate" : "/todo/all";
     const response = await callBackend<unknown>({ method: "GET", path });

@@ -15,6 +15,12 @@ export default defineAction({
   schema: z.object({}),
   http: { method: "GET" },
   readOnly: true,
+  /**
+   * External-agent ingest opt-in (Phase 7): authenticated MCP/A2A callers may
+   * read the scratchpad directly. `requiresAuth: true` keeps it off the
+   * anonymous local-dev probe surface.
+   */
+  publicAgent: { expose: true, readOnly: true, requiresAuth: true },
   run: async () => {
     const response = await callBackend<Record<string, unknown>>({
       method: "GET",

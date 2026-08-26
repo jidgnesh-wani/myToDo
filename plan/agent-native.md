@@ -13,6 +13,8 @@ The plan assumes:
 
 The agent must update AGENTS.md files as contracts per DOX rules when scopes, workflows, or durable behaviors change.
 
+> **Phase 6 (Gradual Backend Refactor) is SKIPPED** by user decision — it will not be executed. Spring Boot stays the source of truth; all actions keep proxying via `actions/lib/backendClient.ts`. See [Phase 6](#phase-6--gradual-backend-refactor-optional--skipped-2026-08-23).
+
 ---
 
 ## Phase 0 – Read DOX and Establish Context — COMPLETE (verified 2026-08-23)
@@ -213,7 +215,7 @@ Goal: allow the agent to perform multi-step tasks in the todo domain.
 
 ## Phase 6 – Gradual Backend Refactor (Optional) — SKIPPED (2026-08-23)
 
-Skipped by user decision; this optional phase will not be executed. Spring Boot remains the source of truth for all todo-domain endpoints; actions continue proxying via `actions/lib/backendClient.ts`.
+**Skipped by explicit user decision on 2026-08-24: this optional phase is out of scope and will not be executed.**** Spring Boot remains the source of truth for all todo-domain endpoints; actions continue proxying via `actions/lib/backendClient.ts`. The steps below are retained for reference only.
 
 Goal: optionally move some business logic from Spring Boot into Agent-Native directly, while keeping contracts stable.
 
@@ -236,25 +238,42 @@ Goal: optionally move some business logic from Spring Boot into Agent-Native dir
 
 ---
 
-## Phase 7 – MCP and External Agent Exposure
+## Phase 7 – MCP and External Agent Exposure — COMPLETE (verified 2026-08-24)
 
 Goal: expose a safe subset of actions as MCP tools for external agents.
 
-1. **Review agent-native MCP docs**
-   - In `agent-native/`, open `.claude-plugin/`, `.claude`, or other MCP-related files to understand how actions are exported as MCP tools.
+1. **Review agent-native MCP docs** — DONE
+   - The framework auto-mounts the MCP server at `/mcp` when `mcp` options are
+     passed to `createAgentChatPlugin` (`agent-native/packages/core/src/mcp/`).
+   - Tool visibility derives from action metadata (`http`/`readOnly`/`publicAgent`)
+     plus the plugin policy (`connectorCatalog`, `externalAgents`).
 
-2. **Define MCP tool subset**
-   - From `actions-candidates.md`, choose only low-risk actions (e.g., `list_tasks`, `summarize_tasks`).
-   - Avoid destructive or high-risk actions at first.
+2. **Define MCP tool subset** — DONE
+   - Curated surface lives in `agent-app/server/lib/mcp-config.ts`:
+     - Directly callable reads: `listTasks`, `getScratchpad` (both GET +
+       `readOnly` + `publicAgent: { expose, readOnly, requiresAuth: true }`).
+     - Mutations (`createTask`, `updateTask`, `deleteTask`, `saveScratchpad`)
+       are never advertised: `externalAgents.writes: "ask_app_only"` keeps
+       writes behind the agent loop's approval flow, and `denyActions` lists
+       every mutating action as defense-in-depth.
+   - Contract tests pin this in `agent-app/actions/mcp-exposure.spec.ts`.
 
-3. **Configure MCP manifest**
-   - Create or update an MCP manifest file (e.g., `agent-native.app-skill.json` analog) in `agent-app/` that maps actions to tools.
+3. **Configure MCP manifest** — DONE
+   - `mcpOptions` in `agent-app/server/plugins/agent-chat.ts` wires the policy
+     into the plugin; the framework serves the curated catalog at `/mcp`.
 
-4. **Test with external clients**
-   - Use Claude or other MCP-compatible clients to call tools and verify they operate correctly.
+4. **Test with external clients** — DONE (verified 2026-08-24)
+   - Live probe: `python3 agent-app/verify-mcp.py` against `pnpm run dev`
+     (see `agent-app/AGENT.md` → Dev server walkthrough). Verified:
+     initialize OK (server title "Todo"), tools/list advertises exactly
+     `listTasks` + `getScratchpad` (+ framework builtin verbs incl. `ask_app`),
+     no mutating tool is listed, direct `deleteTask` call is rejected as
+     "Unknown tool", and `listTasks` dispatches through the MCP → action →
+     `backendClient` path.
 
-5. **Update DOX**
-   - In root `AGENTS.md`, record that MCP tools now exist and note the subset and safety rules.
+5. **Update DOX** — DONE
+   - Root `AGENT.md` records the MCP surface and safety rules; `agent-app/AGENT.md`
+     owns the curation contract and verification steps.
 
 ---
 

@@ -5,6 +5,7 @@ import {
 } from "@agent-native/core/server";
 
 import actionsRegistry from "../../.generated/actions-registry.js";
+import { mcpOptions } from "../lib/mcp-config";
 
 const INITIAL_TOOL_NAMES = ["view-screen", "navigate", "hello"];
 
@@ -13,6 +14,12 @@ export default createAgentChatPlugin({
   actions: loadActionsFromStaticRegistry(actionsRegistry),
   initialToolNames: INITIAL_TOOL_NAMES,
   resolveOrgId: async (event) => (await getOrgContext(event)).orgId,
+  /**
+   * MCP / external-agent surface (Phase 7) — see `server/lib/mcp-config.ts`
+   * for the curation contract. Only read-only actions are directly callable;
+   * mutations stay behind the agent loop's approval flow.
+   */
+  mcp: mcpOptions,
   systemPrompt: `You are the Todo app agent, embedded as a chat panel inside the todo frontend.
 
 Actions are the source of truth for all data operations. Always prefer calling an action over guessing.

@@ -121,3 +121,15 @@ Actions currently exposed to the agent runtime:
 | `deleteTask` | `agent-app/actions/deleteTask.ts` | `DELETE /todo/delete/{id}` |
 | `getScratchpad` | `agent-app/actions/getScratchpad.ts` | `GET /todo/scratchpad` |
 | `saveScratchpad` | `agent-app/actions/saveScratchpad.ts` | `POST /todo/scratchpad` |
+
+## External-Agent (MCP) Surface
+
+The framework auto-mounts an MCP server at `/mcp` on the agent-app dev server
+(`http://localhost:8080/mcp`). The curated todo surface is read-only: external
+agents can directly call `listTasks` and `getScratchpad` with authentication;
+every mutating action is hidden from the tool list (`externalAgents.writes:
+"ask_app_only"` + `denyActions`), so writes only happen through the agent loop
+with the approval gates documented in `plan/agent-workflows.md`. The curation
+contract lives in `agent-app/server/lib/mcp-config.ts`; Phase 6 (backend
+refactor) was skipped by user decision, so Spring Boot remains the source of
+truth behind every action.
