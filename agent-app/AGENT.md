@@ -42,6 +42,7 @@ All checks use `pnpm`. The package manager is pinned to `pnpm@10.29.1` in `packa
 4. MCP surface check (Phase 7): with the dev server running, `python3 verify-mcp.py` probes `/mcp` over JSON-RPC — expect initialize OK (title "Todo"), tools/list showing exactly the read-only actions plus framework builtins (`ask_app`, etc.), no mutating tool listed, direct `deleteTask` rejected as "Unknown tool", and `listTasks` dispatching through the action stack (a `fetch failed` response head is expected when the Spring backend is not running and itself proves dispatch works). Run server + probe inside one terminal invocation: start `pnpm run dev` in the background, poll `http://localhost:8080/` until 200, run the probe, then kill the server; detached servers do not survive between terminal sessions.
 
 Known environment gotchas (verified 2026-08-09):
+
 - Node must be v24.x (`agent-native/.nvmrc` pins v24.14.0). If `better-sqlite3`'s native binary was built for another ABI (e.g. `NODE_MODULE_VERSION 147` vs required `137`), the Nitro dev worker crashes on DB migration (`[db] Migration failed: ... compiled against a different Node.js version`) and every request returns HTTP 500 even though Vite reports "ready". Fix: rebuild from source against the current Node —
   `cd agent-native/node_modules/.pnpm/better-sqlite3@*/node_modules/better-sqlite3 && rm -rf build && npm_config_build_from_source=true npx --no-install node-gyp rebuild --release`
   The pnpm store can reuse a stale binary after reinstall, so repeat this if the ABI error recurs.

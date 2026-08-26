@@ -34,4 +34,5 @@ None yet.
 | `actions-candidates.md` | Candidate Agent-Native Actions schemas and mappings |
 | `runtime-db.md` | Database boundary decision: isolated SQLite for agent-app vs Spring Boot DB |
 | `agent-workflows.md` | Agent-native workflow descriptions and confirmation rules |
+| `open-items.md` | Remaining manual verification, known failures, and follow-up work |
 

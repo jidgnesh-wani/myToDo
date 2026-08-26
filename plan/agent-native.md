@@ -277,27 +277,31 @@ Goal: expose a safe subset of actions as MCP tools for external agents.
 
 ---
 
-## Phase 8 – Verification and Closeout
+## Phase 8 – Verification and Closeout — COMPLETE (verified 2026-08-26)
 
-1. **Repository-wide checks**
-   - Run backend tests: `cd backend-springboot && ./mvnw test`.
-   - Run frontend tests and lint: `cd frontend-next && npm run test && npm run lint`.
-   - Run agent-app tests and lint based on its `package.json`.
-
-2. **User-level manual tests**
-   - Verify that a user can:
-     - Use the app as before (task CRUD).
-     - Open the agent panel and ask it to list or summarize tasks.
-     - Approve an agent proposal to create or update tasks.
-
-3. **Update AGENTS.md chain**
-   - For every folder touched (`frontend-next/`, `backend-springboot/`, `agent-app/`, `plan/`), perform a DOX pass:
-     - Ensure Purpose, Local Contracts, Work Guidance, and Verification reflect the new agent-native behavior.
-     - Update Child DOX Index entries for new documents.
-     - Remove stale statements (e.g., "frontend only calls backend" if actions now exist).
-
-4. **Record open work**
-   - In `plan/open-items.md`, list remaining tasks (e.g., more pages to migrate to actions, more endpoints to refactor, more MCP tools to expose).
+1. **Repository-wide checks** — DONE
+   - Backend: `cd backend-springboot && ./mvnw test` → 25/25 pass.
+     Two environment-driven fixes were required first:
+     - `pom.xml`: surefire now loads `mockito-core` as `-javaagent` from
+       `${settings.localRepository}` (version pinned by the Boot parent).
+       Root cause: ByteBuddy could not self-attach to the JDK 21 JVM
+       (Arch Linux), so every Mockito-based test failed at plugin init.
+     - `TodoRestControllerIntegrationTest`: base URL uses `127.0.0.1` instead
+       of `localhost` because Reactor Netty resolves via DNS only, which fails
+       in environments without a DNS resolver.
+   - Frontend: `npm run lint` → 0 errors (4 pre-existing unused-var warnings);
+     `npm run test` → 17/18 pass. The one failure
+     (`TaskContext.test.js` “should persist inProgress…” — stale mock missing
+     `fetchTasks`) predates the conversion; see `plan/open-items.md`.
+   - Agent-app: `typecheck` exit 0; vitest 26/26 pass; `oxfmt --check` clean;
+     dev-server smoke test returns HTTP 200 on `http://localhost:8080`.
+2. **User-level manual tests** — deferred to user (cannot be automated here);
+   tracked in `plan/open-items.md`.
+3. **Update AGENTS.md chain** — DONE (this closeout): backend test-agent
+   contract recorded in `backend-springboot/AGENT.md`; `plan/AGENT.md` index
+   gains `open-items.md`; root `AGENT.md` unchanged (no scope/port/action/MCP
+   changes).
+4. **Record open work** — DONE: see `plan/open-items.md`.
 
 ---
 
