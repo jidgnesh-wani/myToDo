@@ -2,6 +2,8 @@ package com.myapp.todo;
 
 import com.myapp.todo.dto.TodoOperationResult;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.web.bind.annotation.*;
@@ -9,9 +11,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(path = "/todo")
 public class TodoRestController {
-
-    @Autowired
-    private TodoItemRepository repository; // Kept for the getAll() method as per the provided Code Edit
 
     @Autowired
     private TodoService todoService;
@@ -23,7 +22,7 @@ public class TodoRestController {
 
     @GetMapping("/all")
     public @ResponseBody Iterable<TodoItem> getAll() {
-        return repository.findAll();
+        return todoService.getAll();
     }
 
     @PostMapping("/add")
@@ -34,9 +33,12 @@ public class TodoRestController {
             @RequestParam(required = false) TodoItem.RepeatPattern repeatType,
             @RequestParam(required = false) Integer repeatDuration,
             @RequestParam(required = false) Integer priority,
-            @RequestParam(required = false) Boolean longTerm) {
+            @RequestParam(required = false) Boolean longTerm,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime assignedTime,
+            @RequestParam(required = false) Integer reminderMinutesBefore) {
 
-        return todoService.addTask(category, name, taskDate, repeatType, repeatDuration, priority, longTerm);
+        return todoService.addTask(category, name, taskDate, repeatType, repeatDuration, priority, longTerm,
+                assignedTime, reminderMinutesBefore);
     }
 
     @PostMapping("/update")
