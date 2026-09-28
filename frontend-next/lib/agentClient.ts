@@ -120,8 +120,11 @@ export async function addTask(
   repeatType = "NONE",
   repeatDuration = 0,
   longTerm = false,
+  assignedTime: string | null = null,
+  reminderMinutesBefore: number | null = null,
 ): Promise<unknown> {
-  if (!AGENT_URL) return service.addTask(task, tdate, category, priority, repeatType, repeatDuration, longTerm);
+  if (!AGENT_URL)
+    return service.addTask(task, tdate, category, priority, repeatType, repeatDuration, longTerm, assignedTime, reminderMinutesBefore);
 
   try {
     const result = await callAction<{ task: unknown }>("createTask", "POST", {
@@ -132,12 +135,14 @@ export async function addTask(
       repeatType,
       repeatDuration,
       longTerm,
+      ...(assignedTime ? { assignedTime } : {}),
+      ...(reminderMinutesBefore !== null ? { reminderMinutesBefore } : {}),
     });
     // createTask returns { task: {...} }
     return (result as { task: unknown }).task ?? result;
   } catch (err) {
     console.warn("[agentClient] addTask falling back to service.js:", err);
-    return service.addTask(task, tdate, category, priority, repeatType, repeatDuration, longTerm);
+    return service.addTask(task, tdate, category, priority, repeatType, repeatDuration, longTerm, assignedTime, reminderMinutesBefore);
   }
 }
 
@@ -158,7 +163,8 @@ export async function updateField(
       field,
       value,
     });
-    // updateTask returns { task: {...} } — mirror service.js which returns item
+    // updateTask returns { task: <backend result> } — the backend's { status, item, nextItem },
+    // the same shape service.js returns
     return (result as { task: unknown }).task ?? result;
   } catch (err) {
     console.warn("[agentClient] updateField falling back to service.js:", err);

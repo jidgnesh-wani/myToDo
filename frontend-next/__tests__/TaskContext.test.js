@@ -35,6 +35,8 @@ describe('TaskContext', () => {
             updateBackend: mockUpdateBackend,
             removeTask: mockRemoveTask,
             addToFrontend: mockAddToFrontend,
+            // onPopupClose refetches after replacing an edited task
+            fetchTasks: jest.fn(),
             startDate: { add: jest.fn() }, // minimal mock for moment/dayjs
         });
 
@@ -92,7 +94,9 @@ describe('TaskContext', () => {
             priority,
             repeatType,
             repeatDuration,
-            longTerm
+            longTerm,
+            assignedTime,
+            null
         );
 
         // Verify updateBackend was called for inProgress

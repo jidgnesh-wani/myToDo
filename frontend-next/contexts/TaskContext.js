@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState } from 'react';
 import useTaskManagement from '../hooks/useTaskManagement';
 import { addTask } from "../lib/agentClient";
 import { useUI } from './UIContext';
-import { calculatePredecessor, calculatePredecessorUnfiltered } from '../lib/dragUtils';
+import { calculatePredecessorUnfiltered } from '../lib/dragUtils';
 
 const TaskContext = createContext();
 
@@ -50,6 +50,12 @@ export const TaskProvider = ({ children }) => {
         return acc;
     }, {});
 
+    // Unfiltered open tasks (project filters must not silence reminders)
+    const allOpenTasks = [
+        ...Object.values(taskManagement.taskDays).flat(),
+        ...(taskManagement.overdueTasks.overdue || []),
+    ].filter(task => !task.complete);
+
     const filteredOverdueTasks = {
         overdue: (taskManagement.overdueTasks.overdue || []).filter(isTaskVisible)
     };
@@ -60,19 +66,16 @@ export const TaskProvider = ({ children }) => {
         setShowPopup(true);
     };
 
-    const onPopupClose = async (deleteid = -1, taskDate, taskName = '', dateChoice, projectChoice = "None", priority = 0, repeatType = "NONE", repeatDuration = 0, taskOrder = 0, assignedTime = null, inProgress = false, timeTaken = 0, longTerm = false) => {
+    const onPopupClose = async (deleteid = -1, taskDate, taskName = '', dateChoice, projectChoice = "None", priority = 0, repeatType = "NONE", repeatDuration = 0, taskOrder = 0, assignedTime = null, inProgress = false, timeTaken = 0, longTerm = false, reminderMinutesBefore = null) => {
         if (taskName.trim() !== '') {
             let task;
             try {
-                task = await addTask(taskName, dateChoice, projectChoice, priority, repeatType, repeatDuration, longTerm);
+                // A reminder needs a time; the backend stores both on create
+                const reminder = assignedTime ? reminderMinutesBefore : null;
+                task = await addTask(taskName, dateChoice, projectChoice, priority, repeatType, repeatDuration, longTerm, assignedTime, reminder);
             } catch (err) {
                 console.error('addTask backend failed:', err);
                 return;
-            }
-
-            if (assignedTime) {
-                task.assignedTime = assignedTime;
-                await taskManagement.updateBackend(task.id, "assignedTime", assignedTime);
             }
 
             if (inProgress) {
@@ -206,6 +209,7 @@ export const TaskProvider = ({ children }) => {
             taskDays: filteredTaskDays,
             completedTasks: filteredCompletedTasks,
             overdueTasks: filteredOverdueTasks,
+            allOpenTasks,
             showPopup,
             setShowPopup,
             popupDate,
