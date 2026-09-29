@@ -57,7 +57,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          apk="myToDo-android-${TAG}-debug.apk"
+          # android-v1.2 -> myToDo-android-v1.2-debug.apk
+          apk="myToDo-android-${TAG#android-}-debug.apk"
           cp app/build/outputs/apk/debug/app-debug.apk "$apk"
           sha256sum "$apk" | tee "$apk.sha256"
           gh release upload "$TAG" "$apk" "$apk.sha256" --clobber --repo "$GITHUB_REPOSITORY"

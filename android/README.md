@@ -90,7 +90,7 @@ The wrapper was generated with `docker run --rm -v "$PWD":/w -w /w gradle:8.11-j
 
 ## Release builds (GitHub Actions)
 
-`.github/workflows/android-release.yml` runs whenever a GitHub release is published. It checks out the release tag, runs the unit tests, builds the debug APK and attaches `myToDo-android-<tag>-debug.apk` plus a `.sha256` file to that release. To rebuild an existing release, use **Actions → Android APK → Run workflow** with its tag. This needs the workflow on the default branch. Bump `versionCode`/`versionName` in `app/build.gradle.kts` before tagging, so phones install the new APK as an update.
+`.github/workflows/android-release.yml` runs whenever a GitHub release is published. It checks out the release tag, runs the unit tests, builds the debug APK and attaches `myToDo-android-<version>-debug.apk` (the tag without its `android-` prefix) plus a `.sha256` file to that release. To rebuild an existing release, use **Actions → Android APK → Run workflow** with its tag. This needs the workflow on the default branch. Bump `versionCode`/`versionName` in `app/build.gradle.kts` before tagging, so phones install the new APK as an update.
 
 ## Install
 
