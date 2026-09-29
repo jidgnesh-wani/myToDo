@@ -140,4 +140,43 @@ class SyncIntegrationTest {
         assertThat(done.getNextItem()).isNotNull();
         assertThat(done.getNextItem().getTaskDate()).isEqualTo(LocalDate.of(2026, 10, 8));
     }
+
+    @Test
+    void webEditKeepsIdentityAndReachesSyncClients() {
+        TodoOperationResult added = restTemplate.postForObject(
+                UriComponentsBuilder.fromUriString(baseUrl + "/add")
+                        .queryParam("name", "Draft").queryParam("category", "Work")
+                        .queryParam("taskDate", "2026-10-01").build().toUri(),
+                null, TodoOperationResult.class);
+        TodoItem original = added.getItem();
+        long cursor = changes(0).getServerTime();
+
+        TodoOperationResult edited = restTemplate.postForObject(
+                UriComponentsBuilder.fromUriString(baseUrl + "/edit")
+                        .queryParam("id", original.getId()).queryParam("name", "Final")
+                        .queryParam("category", "Home").queryParam("taskDate", "2026-10-02")
+                        .queryParam("priority", 2).queryParam("assignedTime", "18:30:00")
+                        .queryParam("reminderMinutesBefore", 15).build().toUri(),
+                null, TodoOperationResult.class);
+
+        assertThat(edited.getItem().getId()).isEqualTo(original.getId());
+        assertThat(edited.getItem().getUuid()).isEqualTo(original.getUuid());
+
+        // Sync clients see one updated row, not a tombstone plus a new task
+        List<TodoItem> delta = changes(cursor).getItems();
+        assertThat(delta).hasSize(1);
+        TodoItem synced = delta.get(0);
+        assertThat(synced.getUuid()).isEqualTo(original.getUuid());
+        assertThat(synced.isDeleted()).isFalse();
+        assertThat(synced.getName()).isEqualTo("Final");
+        assertThat(synced.getTaskDate()).isEqualTo(LocalDate.of(2026, 10, 2));
+        assertThat(synced.getReminderMinutesBefore()).isEqualTo(15);
+    }
+
+    @Test
+    void repositoriesAreNotExposedOverRest() {
+        // Spring Data REST would bypass soft delete and sync stamps
+        assertThat(restTemplate.getForEntity("http://127.0.0.1:" + port + "/api/todoItems", String.class)
+                .getStatusCode().is4xxClientError()).isTrue();
+    }
 }

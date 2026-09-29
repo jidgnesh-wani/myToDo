@@ -173,6 +173,29 @@ export async function updateField(
 }
 
 // ---------------------------------------------------------------------------
+// editTask
+// ---------------------------------------------------------------------------
+
+/**
+ * Multi-field edits from the task dialog go straight to the backend: the
+ * agent's updateTask action patches one field at a time.
+ */
+export async function editTask(
+  id: number,
+  task: string,
+  tdate: string,
+  category = "None",
+  priority = 0,
+  repeatType = "NONE",
+  repeatDuration = 0,
+  longTerm = false,
+  assignedTime: string | null = null,
+  reminderMinutesBefore: number | null = null,
+): Promise<unknown> {
+  return service.editTask(id, task, tdate, category, priority, repeatType, repeatDuration, longTerm, assignedTime, reminderMinutesBefore);
+}
+
+// ---------------------------------------------------------------------------
 // deleteTask
 // ---------------------------------------------------------------------------
 

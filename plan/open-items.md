@@ -11,7 +11,6 @@ Remaining work after the Agent-Native conversion (post Phase 8 closeout, 2026-08
 ## Frontend
 
 - Pagination styling in Search is unverified visually (seed data never exceeds one page).
-- Editing a task deletes and re-creates it (new `uuid`); consider an in-place update path so sync sees an edit instead of delete + create.
 
 ## Android
 
@@ -21,7 +20,6 @@ Remaining work after the Agent-Native conversion (post Phase 8 closeout, 2026-08
 ## Backend
 
 - Tombstones (`deleted=true`) are never purged.
-- Spring Data REST still auto-exposes repositories under `/api/*`, bypassing soft delete and sync stamps; disable it or restrict it if unused.
 
 ## Actions / MCP surface
 

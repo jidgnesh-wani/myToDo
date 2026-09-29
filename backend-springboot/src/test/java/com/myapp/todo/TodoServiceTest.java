@@ -263,4 +263,55 @@ class TodoServiceTest {
         assertEquals("First", day.get(0).getName());
         assertEquals("No order", day.get(1).getName());
     }
+
+    @Test
+    void editTaskUpdatesInPlaceAndKeepsProgress() {
+        sampleItem.setUuid("fixed-uuid");
+        sampleItem.setInProgress(true);
+        sampleItem.setTimeTaken(120L);
+        sampleItem.setDayOrder(4);
+        when(repository.findById(1L)).thenReturn(Optional.of(sampleItem));
+        stubSaves();
+
+        TodoOperationResult result = todoService.editTask(1L, "Home", "Renamed", sampleItem.getTaskDate(),
+                TodoItem.RepeatPattern.NONE, 0, 3, false, java.time.LocalTime.of(9, 0), 10);
+
+        assertEquals("Updated", result.getStatus());
+        assertSame(sampleItem, result.getItem());
+        assertEquals("fixed-uuid", sampleItem.getUuid());
+        assertEquals("Renamed", sampleItem.getName());
+        assertEquals("Home", sampleItem.getCategory());
+        assertEquals(3, sampleItem.getPriority());
+        assertEquals(10, sampleItem.getReminderMinutesBefore());
+        assertEquals(4, sampleItem.getDayOrder());
+        assertTrue(sampleItem.isInProgress());
+        assertEquals(120L, sampleItem.getTimeTaken());
+        verify(repository, never()).delete(any());
+    }
+
+    @Test
+    void editTaskMovedToAnotherDayGoesLast() {
+        LocalDate newDate = sampleItem.getTaskDate().plusDays(1);
+        when(repository.findById(1L)).thenReturn(Optional.of(sampleItem));
+        when(repository.findByTaskDate(newDate)).thenReturn(new ArrayList<>(List.of(
+                new TodoItem(newDate, 1, "Work", "A"), new TodoItem(newDate, 2, "Work", "B"))));
+        stubSaves();
+
+        todoService.editTask(1L, "Work", "Test Task", newDate, null, null, null, null, null, null);
+
+        assertEquals(newDate, sampleItem.getTaskDate());
+        assertEquals(3, sampleItem.getDayOrder());
+    }
+
+    @Test
+    void editTaskRejectsDeletedTask() {
+        sampleItem.setDeleted(true);
+        when(repository.findById(1L)).thenReturn(Optional.of(sampleItem));
+
+        TodoOperationResult result = todoService.editTask(1L, "Work", "X", sampleItem.getTaskDate(),
+                null, null, null, null, null, null);
+
+        assertEquals("Error: Item not found", result.getStatus());
+        verify(repository, never()).save(any());
+    }
 }

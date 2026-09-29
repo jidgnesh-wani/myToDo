@@ -171,6 +171,40 @@ public class TodoService {
         }
     }
 
+    /**
+     * Replaces a task's editable fields in place, keeping its id and uuid so sync
+     * clients see an edit rather than a delete plus a create. Progress fields
+     * (complete, inProgress, timeTaken) are left alone.
+     */
+    public TodoOperationResult editTask(long id, String category, String name, LocalDate taskDate,
+            TodoItem.RepeatPattern repeatType, Integer repeatDuration, Integer priority, Boolean longTerm,
+            LocalTime assignedTime, Integer reminderMinutesBefore) {
+        Optional<TodoItem> optItem = repository.findById(id);
+        if (optItem.isEmpty() || optItem.get().isDeleted()) {
+            logger.warn("Attempted to edit non-existent task with id: {}", id);
+            return new TodoOperationResult("Error: Item not found", null);
+        }
+
+        TodoItem item = optItem.get();
+        if (!Objects.equals(item.getTaskDate(), taskDate)) {
+            // Moving to another day puts the task at the end of that day
+            item.setDayOrder(activeOn(taskDate).size() + 1);
+        }
+        item.setCategory(category);
+        item.setName(name);
+        item.setTaskDate(taskDate);
+        item.setRepeatType(repeatType != null ? repeatType : TodoItem.RepeatPattern.NONE);
+        item.setRepeatDuration(repeatDuration != null ? repeatDuration : 0);
+        item.setPriority(priority != null ? priority : 0);
+        item.setLongTerm(longTerm != null ? longTerm : false);
+        item.setAssignedTime(assignedTime);
+        item.setReminderMinutesBefore(reminderMinutesBefore);
+
+        TodoItem saved = touch(item);
+        logger.info("Edited task with id: {}", id);
+        return new TodoOperationResult("Updated", saved);
+    }
+
     public boolean deleteTask(Long id) {
         Optional<TodoItem> optItem = repository.findById(id);
         if (optItem.isPresent()) {

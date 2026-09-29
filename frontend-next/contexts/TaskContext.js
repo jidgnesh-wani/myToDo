@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState } from 'react';
 import useTaskManagement from '../hooks/useTaskManagement';
-import { addTask } from "../lib/agentClient";
+import { addTask, editTask } from "../lib/agentClient";
 import { useUI } from './UIContext';
 import { calculatePredecessorUnfiltered } from '../lib/dragUtils';
 
@@ -66,35 +66,40 @@ export const TaskProvider = ({ children }) => {
         setShowPopup(true);
     };
 
-    const onPopupClose = async (deleteid = -1, taskDate, taskName = '', dateChoice, projectChoice = "None", priority = 0, repeatType = "NONE", repeatDuration = 0, taskOrder = 0, assignedTime = null, inProgress = false, timeTaken = 0, longTerm = false, reminderMinutesBefore = null) => {
+    const onPopupClose = async (editId = -1, taskDate, taskName = '', dateChoice, projectChoice = "None", priority = 0, repeatType = "NONE", repeatDuration = 0, _taskOrder = 0, assignedTime = null, inProgress = false, timeTaken = 0, longTerm = false, reminderMinutesBefore = null) => {
         if (taskName.trim() !== '') {
-            let task;
-            try {
-                // A reminder needs a time; the backend stores both on create
-                const reminder = assignedTime ? reminderMinutesBefore : null;
-                task = await addTask(taskName, dateChoice, projectChoice, priority, repeatType, repeatDuration, longTerm, assignedTime, reminder);
-            } catch (err) {
-                console.error('addTask backend failed:', err);
-                return;
-            }
+            // A reminder needs a time; the backend stores both
+            const reminder = assignedTime ? reminderMinutesBefore : null;
+            const isEdit = editId !== -1 && editId !== "-1" && editId !== null && editId !== undefined;
 
-            if (inProgress) {
-                task.inProgress = true;
-                await taskManagement.updateBackend(task.id, "inProgress", true);
-            }
-
-            if (timeTaken > 0) {
-                task.timeTaken = timeTaken;
-                await taskManagement.updateBackend(task.id, "timeTaken", timeTaken);
-            }
-
-            if (deleteid !== -1 && deleteid !== "-1" && deleteid !== null && deleteid !== undefined) {
-                await taskManagement.removeTask(deleteid, taskDate, true);
-                task.dayOrder = taskOrder;
-                taskManagement.updateBackend(task.id, "dayOrder", taskOrder);
-                // Refresh from backend so old task is gone before new one appears
+            if (isEdit) {
+                // Edit in place so the task keeps its id and uuid for sync clients
+                try {
+                    await editTask(editId, taskName, dateChoice, projectChoice, priority, repeatType, repeatDuration, longTerm, assignedTime, reminder);
+                } catch (err) {
+                    console.error('editTask backend failed:', err);
+                    return;
+                }
                 await taskManagement.fetchTasks();
             } else {
+                let task;
+                try {
+                    task = await addTask(taskName, dateChoice, projectChoice, priority, repeatType, repeatDuration, longTerm, assignedTime, reminder);
+                } catch (err) {
+                    console.error('addTask backend failed:', err);
+                    return;
+                }
+
+                if (inProgress) {
+                    task.inProgress = true;
+                    await taskManagement.updateBackend(task.id, "inProgress", true);
+                }
+
+                if (timeTaken > 0) {
+                    task.timeTaken = timeTaken;
+                    await taskManagement.updateBackend(task.id, "timeTaken", timeTaken);
+                }
+
                 taskManagement.addToFrontend(task);
             }
         }

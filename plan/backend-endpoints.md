@@ -45,6 +45,14 @@ This document inventory details all REST API controllers and endpoints available
   * Fields: `status` ("Added"), `item` (`TodoItem`)
 * **Side Effects**: Writes to DB (inserts a new `TodoItem` row).
 
+#### `POST /todo/edit`
+* **Method**: `editItem(...)`
+* **Description**: Replaces a task's editable fields in place (used by the web task dialog). The task keeps its `id` and `uuid`, so sync clients receive an edit rather than a tombstone plus a new task.
+* **Request Parameters**: `id` (long, required) plus the same parameters as `/todo/add`; optional ones fall back to the same defaults, and an omitted `assignedTime`/`reminderMinutesBefore` clears it.
+* **Response Type**: [TodoOperationResult.java](file:///home/arch/programs/personal_organization/todo/backend-springboot/src/main/java/com/myapp/todo/dto/TodoOperationResult.java)
+  * Fields: `status` ("Updated" or "Error: Item not found"), `item` (`TodoItem` or `null`)
+* **Side Effects**: Writes to DB and bumps `updatedAt`. `complete`, `inProgress` and `timeTaken` are untouched. Moving the task to another date puts it last on that date; otherwise `dayOrder` is kept.
+
 #### `POST /todo/update`
 * **Method**: `updateItem(...)`
 * **Description**: Updates a single field on an existing task by ID.
