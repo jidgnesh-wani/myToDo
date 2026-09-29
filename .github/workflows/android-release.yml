@@ -1,4 +1,4 @@
-# Builds the Android debug APK and attaches it to the release that triggered the run.
+# Builds the Android debug APK and attaches it to the android-* release that triggered the run.
 # Rebuild an existing release from the Actions tab with "Run workflow" and its tag.
 name: Android APK
 
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Release tag to build and attach the APK to
+        description: Release tag to build and attach the APK to (must start with android-)
         required: true
 
 permissions:
@@ -20,6 +20,8 @@ concurrency:
 
 jobs:
   apk:
+    # Only Android releases (android-v1.2); other releases skip the job
+    if: startsWith(github.event.release.tag_name || inputs.tag, 'android-')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
